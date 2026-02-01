@@ -3,14 +3,8 @@ from django.db import models
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["email"]),
-        ]
-
+    
+    # You can add more fields here if needed (e.g., phone_number)
+    
     def __str__(self):
-        return self.email
+        return self.username

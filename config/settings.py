@@ -7,14 +7,14 @@ from datetime import timedelta
 # BASE DIR
 # ------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(BASE_DIR))  # allows apps/ imports
+sys.path.append(str(BASE_DIR))  # Allows direct imports from root
 
 # ------------------------------
 # SECRET & DEBUG
 # ------------------------------
-SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")  # override in prod
+SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
 DEBUG = os.getenv("DEBUG", "0") == "1"
-ALLOWED_HOSTS = ["*"]  # adjust in production
+ALLOWED_HOSTS = ["*"]
 
 # ------------------------------
 # INSTALLED APPS
@@ -32,9 +32,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "drf_spectacular",
+    "rest_framework_simplejwt",
 
     # Project apps
-    "apps.accounts",
+    "apps.accounts.apps.AccountsConfig",
     "apps.catalog",
     "apps.common",
 ]
@@ -59,7 +60,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],  # add template directories if needed
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -109,10 +110,17 @@ USE_I18N = True
 USE_TZ = True
 
 # ------------------------------
-# STATIC FILES
+# STATIC FILES (CSS, JS)
 # ------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# ------------------------------
+# MEDIA FILES (User Uploads)
+# ------------------------------
+# This tells Django where to store uploaded images
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # ------------------------------
 # DEFAULT AUTO FIELD
@@ -134,6 +142,8 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.DefaultPagination",
+    "PAGE_SIZE": 20,
 }
 
 # ------------------------------
@@ -156,13 +166,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 # ------------------------------
-# PAGINATION DEFAULTS
-# ------------------------------
-REST_FRAMEWORK["DEFAULT_PAGINATION_CLASS"] = "apps.common.pagination.DefaultPagination"
-REST_FRAMEWORK["PAGE_SIZE"] = 20
-
-# ------------------------------
-# OPTIONAL: Logging (Production)
+# LOGGING
 # ------------------------------
 LOGGING = {
     "version": 1,

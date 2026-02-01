@@ -1,37 +1,30 @@
 from django.db import models
 
+# 1. Category must be defined first
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=255)
+    # Slug is a URL-friendly name (e.g., "smart-phones")
+    slug = models.SlugField(unique=True, blank=True, null=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=["slug"]),
-        ]
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
 
-
+# 2. Product is defined second
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.PROTECT,
-        related_name="products"
-    )
+    stock = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["price"]),
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["category", "price"]),
-        ]
+    
+    # This links the Product to the Category above
+    category = models.ForeignKey(Category, related_name='products', on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # The image field you requested
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
 
     def __str__(self):
         return self.name
