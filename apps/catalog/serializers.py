@@ -8,7 +8,10 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    # Read-only nested serializer (shows full category details in GET requests)
     category = CategorySerializer(read_only=True)
+    
+    # Write-only field (allows sending "category_id": 1 in POST/PUT requests)
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
         source="category",
@@ -17,4 +20,4 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = "__all__"  # Automatically includes 'image'

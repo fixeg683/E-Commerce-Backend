@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-// Ensure this matches your Vite config proxy or defaults to localhost:8000/api
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+/**
+ * API base URL resolution:
+ * - Docker: http://backend:8000/api
+ * - Local dev (no Docker): http://localhost:8000/api
+ *
+ * VITE_API_BASE_URL should be defined in:
+ *   - Docker: http://backend:8000/api
+ *   - Local:  http://localhost:8000/api
+ */
+const API_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -10,25 +19,33 @@ const apiClient = axios.create({
   },
 });
 
-// Add the JWT token to every request if it exists
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+/**
+ * Automatically attach JWT access token if present
+ */
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
+/**
+ * Centralized API endpoints
+ */
 export const endpoints = {
   // Products
-  products: '/products/',      // Result: /api/products/
+  products: '/products/',
   product: (id) => `/products/${id}/`,
-  
-  // Authentication
-  login: '/token/',            // Result: /api/token/ (Standard SimpleJWT path)
-  register: '/register/',      // Result: /api/register/ (Matches your new accounts app)
-  refresh: '/token/refresh/',  // Result: /api/token/refresh/
-  
+
+  // Authentication (SimpleJWT)
+  login: '/token/',
+  refresh: '/token/refresh/',
+  register: '/register/',
+
   // Orders
   orders: '/orders/',
 };

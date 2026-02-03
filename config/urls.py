@@ -23,6 +23,10 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
 
-# --- NEW: Serve Media Files in Development ---
+# --- SERVE STATIC & MEDIA FILES (Development Only) ---
 if settings.DEBUG:
+    # 1. Media Files (User Uploads like Product Images)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # 2. Static Files (CSS, JS, Admin Theme - FIXES YOUR UI)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
