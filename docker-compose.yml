@@ -4,11 +4,10 @@ services:
     image: postgres:16-alpine
     container_name: ecommerce_db
     restart: unless-stopped
-    env_file: .env  # Loads variables from .env file
+    env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      # Security: Only allow localhost to access the DB directly
       - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
@@ -18,7 +17,7 @@ services:
 
   # 2. Backend (Django)
   backend:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: ecommerce_backend
@@ -30,20 +29,23 @@ services:
         condition: service_healthy
     env_file: .env
     environment:
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
     volumes:
+      # Maps Django's 'media' folder to the shared volume
       - media_volume:/app/media
+      # Maps Django's 'staticfiles' to the shared volume
+      - static_volume:/app/staticfiles
     command: python manage.py runserver 0.0.0.0:8000
 
-  # 3. Frontend (Vite/Nginx)
+  # 3. Frontend (Nginx serving React + media)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      # Vite requires variables at BUILD time, not runtime
       args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api}
+        # Must be localhost so your BROWSER can reach it
+        VITE_API_BASE_URL: http://localhost:8000/api
     container_name: ecommerce_frontend
     restart: unless-stopped
     ports:
@@ -51,7 +53,9 @@ services:
     depends_on:
       - backend
     volumes:
-      - static_volume:/app/staticfiles
+      # Nginx reads static files from here
+      - static_volume:/usr/share/nginx/html/static
+      # Nginx reads media files from here
       - media_volume:/usr/share/nginx/html/media
 
 volumes:
