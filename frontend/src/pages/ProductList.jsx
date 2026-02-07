@@ -49,7 +49,7 @@ const ProductList = () => {
                                     )}
 
                                     <div style={styles.footer}>
-                                        <span style={styles.price}>${product.price}</span>
+                                        <span style={styles.price}>Ksh{product.price}</span>
                                         <span style={styles.stock}>{product.stock} left</span>
                                     </div>
                                     <button 

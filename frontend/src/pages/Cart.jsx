@@ -27,9 +27,15 @@ const Cart = () => {
                             {cart.map(item => (
                                 <tr key={item.id} style={{ borderBottom: '1px solid #444' }}>
                                     <td style={{ padding: '10px' }}>{item.name}</td>
-                                    <td style={{ padding: '10px' }}>${item.price}</td>
+                                    
+                                    {/* CHANGED HERE */}
+                                    <td style={{ padding: '10px' }}>Ksh {item.price}</td>
+                                    
                                     <td style={{ padding: '10px' }}>{item.quantity}</td>
-                                    <td style={{ padding: '10px' }}>${(item.price * item.quantity).toFixed(2)}</td>
+                                    
+                                    {/* CHANGED HERE */}
+                                    <td style={{ padding: '10px' }}>Ksh {(item.price * item.quantity).toFixed(2)}</td>
+                                    
                                     <td style={{ padding: '10px' }}>
                                         <button onClick={() => removeFromCart(item.id)} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button>
                                     </td>
@@ -38,7 +44,8 @@ const Cart = () => {
                         </tbody>
                     </table>
                     <div style={{ textAlign: 'right' }}>
-                        <h3>Total: ${getCartTotal()}</h3>
+                        {/* CHANGED HERE */}
+                        <h3>Total: Ksh {getCartTotal()}</h3>
                         <button 
                             onClick={() => navigate('/checkout')} 
                             style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}

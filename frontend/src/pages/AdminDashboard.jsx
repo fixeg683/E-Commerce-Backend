@@ -11,7 +11,7 @@ const AdminDashboard = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this product?")) {
             try {
-                await api.delete(`products/${id}/`);
+                await api.delete(`products/Ksh{id}/`);
                 setProducts(products.filter(p => p.id !== id));
             } catch (error) {
                 alert("Failed to delete. You may not have permission.");
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
                         {products.map(p => (
                             <tr key={p.id} style={styles.tableRow}>
                                 <td style={styles.td}>{p.name}</td>
-                                <td style={styles.td}>${p.price}</td>
+                                <td style={styles.td}>Ksh{p.price}</td>
                                 <td style={styles.td}>{p.stock}</td>
                                 <td style={styles.td}>
                                     <button 
