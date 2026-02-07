@@ -6,3 +6,8 @@ djangorestframework-simplejwt
 django-filter
 drf-yasg
 pillow
+requests
+django-mpesa
+gunicorn
+dj-database-url 
+whitenoise 

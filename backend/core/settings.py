@@ -1,19 +1,22 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url # Import this
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-change-this-in-production'
+# On Render, we will set this in Environment Variables
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# It will be False on Render, True locally
+DEBUG = os.environ.get('RENDER', False) == False
 
-ALLOWED_HOSTS = []
+# Allow Render URL
+ALLOWED_HOSTS = ['*'] 
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -21,21 +24,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
     'django_filters',
-
-    # Local apps
     'store',
+    # 'django_mpesa', # Uncomment if you fixed the folder structure
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS must be first
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # <--- ADD THIS HERE for Static Files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,24 +65,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Media Configuration (Images)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Database
-# Ensure you created 'ecommerce_db' in postgres before running
+# Database Configuration (Auto-switches between Local and Render)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ecommerce_db',
-        'USER': 'postgres',      # Change if different
-        'PASSWORD': 'password',  # Change if different
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        # Fallback to local postgres if not on Render
+        default='postgres://postgres:password@localhost:5432/ecommerce_db',
+        conn_max_age=600
+    )
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -89,19 +81,23 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static Files (CSS, JS, Images)
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Enable WhiteNoise to serve static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Default primary key field type
+# Media Files (User Uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- DRF CONFIGURATION ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -111,19 +107,22 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
-# --- JWT CONFIGURATION ---
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-# --- CORS CONFIGURATION ---
-# Allow React Frontend
+# CORS: Allow Frontend to talk to Backend
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:3000",
     "http://localhost:5173",
-    "http://localhost:5174",  # <--- ADD THIS LINE
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
+    "https://your-frontend-app.onrender.com", # <--- You will update this after deploying frontend
 ]
+
+# MPESA CONFIGURATION
+MPESA_ENVIRONMENT = 'sandbox'
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_KEY', 'YOUR_KEY_HERE')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_SECRET', 'YOUR_SECRET_HERE')
+MPESA_SHORTCODE = '174379'
+MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
+MPESA_BASE_URL = 'https://sandbox.safaricom.co.ke'

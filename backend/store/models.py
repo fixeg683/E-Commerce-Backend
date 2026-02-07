@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator  # <--- Import this
 
-# 1. Category must be first
+# 1. Category
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(unique=True)
@@ -12,7 +13,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-# 2. Product must be second
+# 2. Product
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255, db_index=True)
@@ -20,8 +21,16 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, db_index=True)
     stock = models.IntegerField(default=0)
     
-    # NEW IMAGE FIELD
+    # Image Field
     image = models.ImageField(upload_to='products/', blank=True, null=True)
+    
+    # NEW EXECUTABLE FILE FIELD
+    executable_file = models.FileField(
+        upload_to='product_files/', 
+        blank=True, 
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['exe'])] # Only allow .exe
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -29,7 +38,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-# 3. Order comes next
+# 3. Order
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -38,7 +47,7 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
 
-# 4. OrderItem is last
+# 4. OrderItem
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

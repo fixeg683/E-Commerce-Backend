@@ -1,8 +1,12 @@
 from rest_framework import viewsets, filters, permissions, generics
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User
 from .models import Product, Category, Order
 from .serializers import ProductSerializer, CategorySerializer, UserSerializer, OrderSerializer
+from .mpesa_utils import MpesaClient  # Import the utility class
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
@@ -35,7 +39,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
 
-# --- Order View (NEW) ---
+# --- Order View ---
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -47,3 +51,33 @@ class OrderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Automatically attach the logged-in user to the order
         serializer.save(user=self.request.user)
+
+# --- M-Pesa Payment View ---
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mpesa_stk_push(request):
+    """
+    Triggers M-Pesa STK Push manually using requests.
+    """
+    phone_number = request.data.get('phone_number')
+    amount = request.data.get('amount')
+
+    if not phone_number or not amount:
+        return Response({'error': 'Phone number and amount are required'}, status=400)
+
+    # Initialize Client
+    client = MpesaClient()
+    
+    # Use a dummy callback URL for localhost testing (M-Pesa requires a valid public URL)
+    callback_url = "https://sandbox.safaricom.co.ke/mpesa/" 
+
+    response = client.stk_push(
+        phone_number=phone_number,
+        amount=amount,
+        callback_url=callback_url
+    )
+
+    if 'error' in response:
+        return Response(response, status=500)
+    
+    return Response(response)
