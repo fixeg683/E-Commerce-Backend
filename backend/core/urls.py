@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse  # <--- Import this
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -9,6 +10,15 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+# --- Define the Root View Here ---
+def api_root(request):
+    return JsonResponse({
+        "status": "success",
+        "message": "E-Commerce API is running successfully!",
+        "documentation": "/docs/",
+        "admin": "/admin/"
+    })
 
 # Swagger/OpenAPI Configuration
 schema_view = get_schema_view(
@@ -25,6 +35,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # Root URL (http://127.0.0.1:8000/)
+    path('', api_root, name='api_root'),  # <--- Added this line
+
     path('admin/', admin.site.urls),
     
     # Store App Routes
