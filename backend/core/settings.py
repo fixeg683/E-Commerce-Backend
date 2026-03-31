@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     
     # Third-party apps
     'rest_framework',
@@ -28,9 +29,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_filters',
+   
 
     # Local apps
     'store',
+    'chatbot',  # <--- ADDED CHATBOT APP HERE
 ]
 
 MIDDLEWARE = [
@@ -101,6 +104,10 @@ STATIC_URL = 'static/'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# --- AI CONFIGURATION ---
+# Set this as an environment variable in production
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'your-placeholder-key')
+
 # --- DRF CONFIGURATION ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -117,13 +124,20 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+# MPESA CONFIGURATION
+MPESA_ENVIRONMENT = 'sandbox' # or 'production'
+MPESA_CONSUMER_KEY = 'YOUR_CONSUMER_KEY'
+MPESA_CONSUMER_SECRET = 'YOUR_CONSUMER_SECRET'
+MPESA_SHORTCODE = '174379' # Sandbox default
+MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919' # Sandbox default
+MPESA_INITIATOR_PASSWORD = 'YOUR_INITIATOR_PASSWORD' # For B2C (optional for now)
+
 # --- CORS CONFIGURATION ---
 # Allow React Frontend
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:3000",
     "http://localhost:5173",
-    "http://localhost:5174",  # <--- ADD THIS LINE
+    "http://localhost:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
 ]
